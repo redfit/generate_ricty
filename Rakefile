@@ -1,9 +1,9 @@
 @conf = {
   inconsolata: 'http://levien.com/type/myfonts/Inconsolata.otf',
-  migu1m: 'http://dl.sourceforge.jp/mix-mplus-ipa/57240/migu-1m-20121030.zip',
+  migu1m: 'http://dl.sourceforge.jp/mix-mplus-ipa/59022/migu-1m-20130617.zip',
   powerline: {
-    patcher: 'https://github.com/Lokaltog/vim-powerline/raw/develop/fontpatcher/fontpatcher',
-    symbol: 'https://github.com/Lokaltog/vim-powerline/raw/develop/fontpatcher/PowerlineSymbols.sfd',
+    patcher: 'https://raw.github.com/Lokaltog/powerline/develop/font/fontpatcher.py',
+    symbol: 'https://raw.github.com/Lokaltog/powerline/develop/font/fontpatcher-symbols.sfd',
   }
 }
 @rictydir = File.expand_path 'Ricty'
@@ -25,6 +25,14 @@ end
 def ricty_script file, opt = {}
   subdir = opt[:misc] ? 'misc' : ''
   File.join @rictydir, subdir, file
+end
+
+def sanitize_fontname fontfile
+  File.rename fontfile, fontfile.gsub(/\s/, '-').sub(/(?<=Ricty)-(?=Discord)/, '')
+end
+
+def sanitize_fontnames fontfiles
+  fontfiles.each{|f| sanitize_fontname f}
 end
 
 task :default => [:initialize, "ricty:default", "powerline:default", "ricty:windows", "powerline:windows"]
@@ -129,7 +137,9 @@ namespace :powerline do
   task :generate => :download do
     chdir @productsdir do
       fonts = FileList['RictyDiscord-*.ttf']
-      sh "fontforge", "-script", "../fontpatcher", *fonts
+      sh "../fontpatcher.py", *fonts
+
+      sanitize_fontnames FileList['*for Powerline.ttf']
     end
   end
 
@@ -138,7 +148,9 @@ namespace :powerline do
     chdir @windowsdir do
       rm FileList['RictyDiscord-*Powerline.ttf']
       fonts = FileList['RictyDiscord-*.ttf']
-      sh "fontforge", "-script", "../../fontpatcher", "--fix-win", *fonts
+      sh "../../fontpatcher.py", *fonts
+
+      sanitize_fontnames FileList['*for Powerline.ttf']
     end
   end
 end
