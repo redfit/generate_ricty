@@ -107,7 +107,7 @@ namespace :ricty do
       fonts = FileList.new('RictyDiscord-*.ttf') do |f|
         f.exclude /-Powerline\.ttf/
       end
-      sh "fontforge", "-script", ricty_script('ricty_ascii_extractor.pe', :misc => true), *fonts
+      sh "fontforge", "-lang=py -script", ricty_script('ricty_ascii_extractor.pe', :misc => true), *fonts
     end
   end
 
